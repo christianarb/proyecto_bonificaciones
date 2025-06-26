@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador de Bonificaciones</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f0f2f5;
+      padding: 2rem;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+    }
+    form {
+      background-color: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    input {
+      margin: 0.5rem;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.5rem 0.5rem 0.5rem 0;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    .producto-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    #resultado {
+      background-color: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      white-space: pre-wrap;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+  </style>
+</head>
+<body>
+  <h1>Simulador de Bonificaciones</h1>
+  <form id="formulario">
+    <div id="productos">
+      <div class="producto-row">
+        <input name="codigo" placeholder="Código" required>
+        <input name="grupo" placeholder="Grupo" required>
+        <input name="cantidad" type="number" placeholder="Cantidad" required>
+      </div>
+    </div>
+    <button type="button" onclick="agregarProducto()">Agregar Producto</button>
+    <button type="submit">Simular</button>
+  </form>
+
+  <h2>Bonificaciones:</h2>
+  <div id="resultado">Aún no hay resultados</div>
+
+  <script>
+    const formulario = document.getElementById('formulario');
+    const productosDiv = document.getElementById('productos');
+
+    function agregarProducto() {
+      const div = document.createElement('div');
+      div.className = 'producto-row';
+      div.innerHTML = `
+        <input name="codigo" placeholder="Código" required>
+        <input name="grupo" placeholder="Grupo" required>
+        <input name="cantidad" type="number" placeholder="Cantidad" required>
+        <button type="button" onclick="this.parentNode.remove()">Eliminar</button>
+      `;
+      productosDiv.appendChild(div);
+    }
+
+    formulario.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const datos = [];
+      productosDiv.querySelectorAll('.producto-row').forEach(div => {
+        const inputs = div.querySelectorAll('input');
+        datos.push({
+          codigo: inputs[0].value,
+          grupo: inputs[1].value,
+          cantidad: parseInt(inputs[2].value)
+        });
+      });
+
+      const res = await fetch('http://127.0.0.1:5000/simular', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(datos)
+      });
+      const bonificaciones = await res.json();
+      document.getElementById('resultado').innerText = JSON.stringify(bonificaciones, null, 2);
+    });
+  </script>
+</body>
+</html>
